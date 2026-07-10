@@ -14,10 +14,20 @@ const USAGE_CACHE = GLib.build_filenamev([HOME, '.cache', 'claudebar', 'usage.js
 const CONFIG_DIR = GLib.build_filenamev([HOME, '.config', 'claude-pixel-bar']);
 const CONFIG_PATH = GLib.build_filenamev([CONFIG_DIR, 'config.json']);
 
-function findClaudebar() {
-    return GLib.find_program_in_path('claudebar')
-        || GLib.build_filenamev([HOME, '.local', 'bin', 'claudebar'])
-        || '/usr/local/bin/claudebar';
+function findClaudebar(extPath) {
+    const candidates = [];
+    if (extPath)
+        candidates.push(GLib.build_filenamev([extPath, 'bin', 'claudebar']));
+    const fromPath = GLib.find_program_in_path('claudebar');
+    if (fromPath)
+        candidates.push(fromPath);
+    candidates.push(GLib.build_filenamev([HOME, '.local', 'bin', 'claudebar']));
+    candidates.push('/usr/local/bin/claudebar');
+    for (const p of candidates) {
+        if (p && Gio.File.new_for_path(p).query_exists(null))
+            return p;
+    }
+    return candidates[0] || null;
 }
 
 const FMT = [
@@ -196,7 +206,7 @@ function reasonLabel(reason) {
     return r.replace(/_/g, ' ');
 }
 
-/** Read Extra details from claudebar cache (placeholders are empty when disabled). */
+/** Read Extra details from usage cache (placeholders are empty when disabled). */
 function loadExtraDetails() {
     try {
         const file = Gio.File.new_for_path(USAGE_CACHE);
@@ -304,7 +314,7 @@ class Indicator extends PanelMenu.Button {
         this._uuid = extension.uuid;
         this._extPath = extension.path;
         this._todayScript = GLib.build_filenamev([extension.path, 'today_stats.py']);
-        this._claudebar = findClaudebar();
+        this._claudebar = findClaudebar(this._extPath);
         this._config = loadConfig();
         this._lastGood = null;
         this._today = null;
@@ -907,16 +917,16 @@ class Indicator extends PanelMenu.Button {
         this._pending = {usage: true, today: !!this._config.show_today};
         this._extraInfo = loadExtraDetails();
         this._sonnetAvailable = loadSonnetAvailable();
-        this._claudebar = findClaudebar();
+        this._claudebar = findClaudebar(this._extPath);
         if (this._view === 'main' && this._lastGood)
             this._renderMain(this._lastGood, false);
 
         let staleHint = false;
 
-        // usage via claudebar
+        // usage helper
         try {
             if (!this._claudebar || !Gio.File.new_for_path(this._claudebar).query_exists(null))
-                throw new Error('claudebar missing');
+                throw new Error('usage helper missing');
             const launcher = new Gio.SubprocessLauncher({
                 flags: Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE,
             });
@@ -945,7 +955,7 @@ class Indicator extends PanelMenu.Button {
         } catch (_e) {
             this._pending.usage = false;
             if (!this._lastGood)
-                this._setError('claudebar not found — install mryll/claudebar');
+                this._setError('usage helper missing');
             this._maybeFinishRefresh(requestId, staleHint);
         }
 

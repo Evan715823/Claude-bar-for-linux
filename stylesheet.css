@@ -1,0 +1,248 @@
+/* Claude Pixel Bar — 奶油风完善版 */
+
+/* 去掉 GNOME 弹窗外壳白底，避免双层框 */
+.cpb-popup .popup-menu-content {
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.cpb-menuitem {
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+.cpb-menuitem:hover,
+.cpb-menuitem:focus,
+.cpb-menuitem:active {
+    background-color: transparent !important;
+}
+
+/* ---------- 顶栏 ---------- */
+.cpb-panel {
+    spacing: 6px;
+}
+
+.cpb-minibar {
+    spacing: 2px;
+}
+
+.cpb-minicell {
+    width: 3px;
+    height: 10px;
+    border-radius: 1px;
+}
+
+.cpb-label {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #e8e6de;
+}
+
+/* ---------- 卡片 ---------- */
+.cpb-card {
+    background-color: #f4f1ea;
+    border: 1px solid #e2ddd2;
+    border-radius: 14px;
+    padding: 16px 18px;
+    spacing: 13px;
+    min-width: 320px;
+    max-width: 340px;
+}
+
+.cpb-card-critical {
+    border-color: #e8c4ba;
+}
+
+.cpb-header {
+    spacing: 10px;
+}
+
+.cpb-headtext {
+    spacing: 2px;
+}
+
+.cpb-brand {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #2a2825;
+}
+
+.cpb-plan {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #9a9488;
+}
+
+.cpb-health {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 4px 10px;
+}
+
+.cpb-sep {
+    height: 1px;
+    background-color: #e5e0d4;
+}
+
+/* ---------- 用量行 ---------- */
+.cpb-row {
+    spacing: 7px;
+}
+
+.cpb-rowhead {
+    spacing: 8px;
+}
+
+.cpb-rowleft {
+    spacing: 6px;
+}
+
+.cpb-title {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b655c;
+}
+
+.cpb-pacepill,
+.cpb-pill {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 8px;
+}
+
+.cpb-pct {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.cpb-pct-sm {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #2a2825;
+}
+
+.cpb-bar {
+    spacing: 2px;
+}
+
+.cpb-cell {
+    height: 8px;
+    border-radius: 2px;
+}
+
+.cpb-sub {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #a8a296;
+}
+
+/* ---------- 底部操作 ---------- */
+.cpb-foot {
+    spacing: 8px;
+}
+
+.cpb-footer {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #b0aa9e;
+}
+
+.cpb-actions {
+    spacing: 8px;
+}
+
+.cpb-btn {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 8px 10px;
+}
+
+.cpb-btn-primary {
+    color: #f4f1ea;
+    background-color: #d97757;
+}
+
+.cpb-btn-primary:hover {
+    background-color: #c8684a;
+}
+
+.cpb-btn-ghost {
+    color: #6b655c;
+    background-color: #ebe6db;
+}
+
+.cpb-btn-ghost:hover {
+    background-color: #e2ddd2;
+}
+
+.cpb-btn-danger {
+    color: #f4f1ea;
+    background-color: #c45c4a;
+}
+
+.cpb-btn-danger:hover {
+    background-color: #b04f3f;
+}
+
+.cpb-hint {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: #a8a296;
+}
+
+/* ---------- Settings ---------- */
+.cpb-section {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    color: #6b655c;
+}
+
+.cpb-setrow {
+    spacing: 10px;
+}
+
+.cpb-setlabel {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2a2825;
+}
+
+.cpb-toggle {
+    font-family: "Manrope", "Ubuntu", sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 4px 10px;
+    min-width: 42px;
+}
+
+.cpb-toggle-on {
+    color: #f4f1ea;
+    background-color: #d97757;
+}
+
+.cpb-toggle-off {
+    color: #6b655c;
+    background-color: #ebe6db;
+}

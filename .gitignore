@@ -1,0 +1,13 @@
+.DS_Store
+*.swp
+*~
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+*.zip
+screenshot/image.png
+screenshot/image1.png
+screenshot/image2.png
+mascot-preview.png
+preview.py

@@ -1,0 +1,8 @@
+{
+  "uuid": "claude-pixel-bar@local",
+  "name": "Claude Pixel Bar",
+  "description": "Cream pixel-art Claude Code usage widget for the GNOME top bar",
+  "shell-version": ["45", "46", "47"],
+  "version": 7,
+  "url": "https://github.com/Evan715823/Claude-bar-for-linux"
+}

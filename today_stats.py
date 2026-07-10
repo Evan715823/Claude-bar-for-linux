@@ -9,7 +9,9 @@ from pathlib import Path
 
 ROOT = Path.home() / ".claude" / "projects"
 MAX_FILES = 400
-MAX_BYTES_PER_FILE = 8 * 1024 * 1024
+# jsonl is append-only; for huge transcripts only scan the tail (today lives there).
+MAX_TAIL_BYTES = 16 * 1024 * 1024
+MAX_LINES_PER_FILE = 250_000
 
 
 def today_bounds():
@@ -49,6 +51,18 @@ def safe_int(v):
         return 0
 
 
+def open_scan(path: Path, size: int):
+    """Open a jsonl file; for large files, start near the end."""
+    fh = path.open("r", errors="ignore")
+    if size > MAX_TAIL_BYTES:
+        try:
+            fh.seek(size - MAX_TAIL_BYTES)
+            fh.readline()  # drop partial first line after seek
+        except OSError:
+            fh.seek(0)
+    return fh
+
+
 def main():
     start, now = today_bounds()
     start_utc = start.astimezone(timezone.utc)
@@ -61,6 +75,7 @@ def main():
     sessions = set()
     models: dict[str, int] = {}
     files_seen = 0
+    files_tailed = 0
 
     try:
         if ROOT.is_dir():
@@ -74,15 +89,17 @@ def main():
                     # Keep a 2-day mtime window so late-night / timezone edge cases still scan.
                     if st.st_mtime < (start_utc.timestamp() - 86400):
                         continue
-                    if st.st_size > MAX_BYTES_PER_FILE:
-                        continue
                 except OSError:
                     continue
 
                 files_seen += 1
+                if st.st_size > MAX_TAIL_BYTES:
+                    files_tailed += 1
                 try:
-                    with path.open("r", errors="ignore") as fh:
-                        for line in fh:
+                    with open_scan(path, st.st_size) as fh:
+                        for line_i, line in enumerate(fh):
+                            if line_i >= MAX_LINES_PER_FILE:
+                                break
                             if '"assistant"' not in line and '"usage"' not in line:
                                 continue
                             try:
@@ -137,6 +154,7 @@ def main():
         "top_model": top_model,
         "scanned_at": now.isoformat(timespec="seconds"),
         "files_scanned": files_seen,
+        "files_tailed": files_tailed,
     }
     json.dump(out, sys.stdout, separators=(",", ":"))
     sys.stdout.write("\n")

@@ -239,16 +239,19 @@ function loadExtraDetails() {
             if (!spend)
                 enabled = !!extra.is_enabled;
             reason = reason || extra.disabled_reason || '';
-            if (!spent && extra.used_credits != null) {
-                // API often stores credits in minor units (cents)
-                const used = Number(extra.used_credits) || 0;
-                spent = formatMoney(Math.round(used), extra.decimal_places ?? 2, extra.currency || 'USD');
+            const usedNum = Number(extra.used_credits);
+            const limNum = Number(extra.monthly_limit);
+            if (!spent && Number.isFinite(usedNum)) {
+                // API stores credits in minor units (cents), same as claudebar
+                spent = formatMoney(Math.round(usedNum), extra.decimal_places ?? 2, extra.currency || 'USD');
             }
-            if (!limit && extra.monthly_limit != null) {
-                const lim = Number(extra.monthly_limit) || 0;
-                limit = formatMoney(Math.round(lim), extra.decimal_places ?? 2, extra.currency || 'USD');
+            if (!limit && Number.isFinite(limNum)) {
+                limit = formatMoney(Math.round(limNum), extra.decimal_places ?? 2, extra.currency || 'USD');
             }
-            if (!pct)
+            // Prefer used/limit (matches claudebar); utilization is a fallback only.
+            if (Number.isFinite(usedNum) && Number.isFinite(limNum) && limNum > 0)
+                pct = Math.round((usedNum * 100) / limNum);
+            else if (extra.utilization != null)
                 pct = Math.round(Number(extra.utilization) || 0);
         }
 
@@ -266,7 +269,8 @@ function loadSonnetAvailable() {
             return false;
         const [, bytes] = file.load_contents(null);
         const raw = JSON.parse(new TextDecoder().decode(bytes));
-        return raw.seven_day_sonnet != null;
+        const sonnet = raw.seven_day_sonnet;
+        return sonnet != null && typeof sonnet === 'object';
     } catch (_e) {
         return false;
     }
@@ -473,7 +477,11 @@ class Indicator extends PanelMenu.Button {
         const enabled = info.enabled === true;
         const s = clean(info.spent || spent);
         const l = clean(info.limit || limit);
-        const p = Number.isFinite(info.pct) ? info.pct : (parseInt(pct, 10) || 0);
+        const fromFmt = parseInt(pct, 10);
+        // Prefer cache-derived pct; if it's 0 but format string has a real value, use that.
+        let p = Number.isFinite(info.pct) ? info.pct : 0;
+        if ((!Number.isFinite(info.pct) || (p === 0 && fromFmt > 0)) && Number.isFinite(fromFmt))
+            p = fromFmt;
         const reason = reasonLabel(info.reason);
 
         const row = new St.BoxLayout({vertical: true, style_class: 'cpb-row'});
@@ -506,7 +514,7 @@ class Indicator extends PanelMenu.Button {
 
         if (enabled) {
             row.add_child(new St.Label({
-                text: `${Math.max(0, 100 - p)}% of extra budget left`,
+                text: `${Math.max(0, 100 - Math.min(100, p))}% of extra budget left`,
                 style_class: 'cpb-sub',
             }));
         } else {
@@ -689,10 +697,15 @@ class Indicator extends PanelMenu.Button {
         });
         back.connect('clicked', () => {
             this._view = 'main';
+            // Today needs a fresh local scan when just enabled (or never fetched).
+            if (this._config.show_today && !this._today) {
+                this._refresh(true);
+                return;
+            }
             if (this._lastGood)
                 this._renderMain(this._lastGood, false);
             else
-                this._refresh();
+                this._refresh(true);
         });
         this._card.add_child(back);
         this._card.add_child(new St.Label({
@@ -856,7 +869,7 @@ class Indicator extends PanelMenu.Button {
         const stale = raw.includes('\u23F8');
         const text = clean(raw);
         const f = text.split('|');
-        if (f.length < 20)
+        if (f.length < 29)
             return null;
         return {
             stale,
